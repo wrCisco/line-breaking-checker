@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Line Breaking Algorithm Prompt Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            font-size: 1.1rem;
+            font-weight: 400;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        .label {
+            display: block;
+            margin-bottom: 12px;
+            font-weight: 500;
+            color: #374151;
+            font-size: 1rem;
+        }
+
+        .prompt-input {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: all 0.2s ease;
+            background: #fafafa;
+        }
+
+        .prompt-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-evenly;
+            margin: 30px 0;
+        }
+
+        .process-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .process-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .process-btn:active {
+            transform: translateY(0);
+        }
+
+        .process-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .loading-spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-section {
+            margin-top: 30px;
+        }
+
+        .result-output {
+            width: 100%;
+            min-height: 120px;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            background: #f9fafb;
+            color: #374151;
+            line-height: 1.6;
+            transition: all 0.2s ease;
+        }
+
+        .result-output:focus {
+            outline: none;
+            border-color: #10b981;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+        }
+
+        .result-section.hidden {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            .title {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+        }
+        .bg-blc {
+            color:red;
+            background-color: #C0F7FF44;
+            padding-inline: .1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Line Breaking</h1>
+            <p class="subtitle">Find the locations where the text may break according to the Unicode Line Breaking Algorithm v17, as described in <a href="https://www.unicode.org/reports/tr14">Unicode Standard Annex #14</a></p>
+        </div>
+
+        <div class="input-section">
+            <label for="promptInput" class="label">Your prompt:</label>
+            <textarea 
+                id="promptInput" 
+                class="prompt-input" 
+                placeholder="Write here..."
+                rows="5"
+            ></textarea>
+        </div>
+
+        <div class="button-container">
+            <button id="process-every-location" class="process-btn">
+                <span class="btn-text">Check every location</span>
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <span>Processing...</span>
+                </div>
+            </button>
+
+            <button id="process-word-boundaries" class="process-btn">
+                <span class="btn-text">Check word boundaries</span>
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <span>Processing...</span>
+                </div>
+            </button>
+
+            <button id="process-iterator" class="process-btn">
+                <span class="btn-text">Find line breaking pos</span>
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <span>Processing...</span>
+                </div>
+            </button>
+        </div>
+
+        <div id="resultSection" class="result-section hidden">
+            <label for="resultOutput" class="label">Result:</label>
+            <div 
+                id="resultOutput" 
+                class="result-output"
+            ></div>
+        </div>
+    </div>
+    <script type="module">
+        import { BreakType, makeLBC } from './dist/src/linebreakingchecker.js'
+
+        const promptInput = document.getElementById('promptInput')
+        const processEveryLoc = document.getElementById('process-every-location')
+        const processBoundaries = document.getElementById('process-word-boundaries')
+        const processIterator = document.getElementById('process-iterator')
+        const resultSection = document.getElementById('resultSection')
+        const resultOutput = document.getElementById('resultOutput')
+        const btnText = document.querySelector('.btn-text')
+        const loadingDiv = document.querySelector('.loading')
+
+        const lbc = await makeLBC()
+        let prevPrompt = ''
+        let prevButton = null
+
+        function displayBreakType(breakType) {
+            let breakTypeDescr
+            let breakTypeChar
+            switch (breakType) {
+                case BreakType.UNKNOWN:
+                    breakTypeDescr = 'unknown'
+                    breakTypeChar = '?'
+                    break
+                case BreakType.FORBIDDEN:
+                    breakTypeDescr = 'forbidden'
+                    breakTypeChar = '×'
+                    break
+                case BreakType.MANDATORY:
+                    breakTypeDescr = 'mandatory'
+                    breakTypeChar = '⏎'
+                    break
+                case BreakType.ALLOWED:
+                    breakTypeDescr = 'allowed'
+                    breakTypeChar = '|'
+                    break
+                default:
+                    console.error('Invalid break type: ' + breakType)
+            }
+            return [ breakTypeDescr, breakTypeChar ]
+        }
+
+        function checkValidPrompt(prompt, btn) {
+            if (!prompt) {
+                alert('Per favore, inserisci un prompt prima di continuare.')
+                return
+            }
+
+            if (prompt === prevPrompt && btn === prevButton) {
+                return
+            }
+            prevPrompt = prompt
+            prevButton = btn
+            return prompt
+        }
+
+        function sanitizeOutput(char) {
+            switch (char) {
+                case '<':
+                    return '&lt;'
+                case '>':
+                    return '&gt;'
+                case undefined:
+                    return ''
+                case '\n':
+                    return '<br>'
+                default:
+                    return char
+            }
+        }
+
+        function startAnim() {
+            // Avvia l'animazione di caricamento
+            processEveryLoc.disabled = true
+            processBoundaries.disabled = true
+            processIterator.disabled = true
+            btnText.style.display = 'none'
+            loadingDiv.style.display = 'flex'
+        }
+
+        function endAnim() {
+            // Reset del pulsante
+            processEveryLoc.disabled = false
+            processBoundaries.disabled = false
+            processIterator.disabled = false
+            btnText.style.display = 'inline'
+            loadingDiv.style.display = 'none'
+        }
+
+        function showResult(results) {
+            resultOutput.innerHTML = results.join("")
+            resultSection.classList.remove('hidden')
+            resultSection.classList.add('fade-in')
+        }
+
+        processBoundaries.addEventListener('click', function() {
+            const prompt = checkValidPrompt(promptInput.value, this)
+            if (!prompt) return
+
+            startAnim()
+
+            lbc.setText(prompt)
+            let resultArray = []
+
+            const segmenterIt = new Intl.Segmenter("it", { granularity: "word" })
+            const promptSegmenter = segmenterIt.segment(prompt)
+            let prevIndex = 0
+            for (const segment of promptSegmenter) {
+                const i = segment.index
+                const breakType = lbc.isPosLineBreaking(i)
+                const [ breakTypeDescr, breakTypeChar ] = displayBreakType(breakType)
+                for (let j = prevIndex; j < i; j++) {
+                    resultArray.push(sanitizeOutput(prompt[j]))
+                }
+                const displayChar = sanitizeOutput(prompt[i])
+                resultArray.push('<span class="bg-blc">' + breakTypeChar + '</span>', displayChar)
+                prevIndex = i + 1
+            }
+            for (let i = prevIndex; i < prompt.length; i++) {
+                resultArray.push(sanitizeOutput(prompt[i]))
+            }
+            resultArray.push('<span class="bg-blc">' + displayBreakType(BreakType.MANDATORY)[1] + '</span>')
+
+            showResult(resultArray)
+            endAnim()
+
+            // Scorri al risultato
+            resultSection.scrollIntoView({ behavior: 'smooth' })
+        })
+
+        processIterator.addEventListener('click', function() {
+            const prompt = checkValidPrompt(promptInput.value, this)
+            if (!prompt) return
+
+            startAnim()
+
+            lbc.setText(prompt)
+            let resultArray = []
+            let prevIndex = 0
+            for (const segment of lbc) {
+                const [breakTypeDescr, breakTypeChar] = displayBreakType(segment.breakType)
+                resultArray.push(prompt
+                    .slice(prevIndex, segment.index)
+                    .split('')
+                    .map(c => sanitizeOutput(c))
+                    .join('')
+                )
+                resultArray.push(
+                    `<span class="bg-blc">${breakTypeChar}</span>${sanitizeOutput(prompt[segment.index])}`
+                )
+                prevIndex = segment.index + 1
+            }
+            resultArray.push(prompt
+                .slice(prevIndex)
+                .split('')
+                .map(c => sanitizeOutput(c))
+                .join('')
+            )
+
+            showResult(resultArray)
+            endAnim()
+
+            resultSection.scrollIntoView({ behavior: 'smooth' })
+
+        })
+
+        processEveryLoc.addEventListener('click', function() {
+            const prompt = checkValidPrompt(promptInput.value, this)
+            if (!prompt) return
+
+            startAnim()
+
+            lbc.setText(prompt)
+            let resultArray = []
+            for (let i = 0; i <= prompt.length; i++) {
+                const breakType = lbc.isPosLineBreaking(i)
+                const [ breakTypeDescr, breakTypeChar ] = displayBreakType(breakType)
+                const displayChar = sanitizeOutput(prompt[i])
+                resultArray.push('<span class="bg-blc">' + breakTypeChar + '</span>', displayChar)
+            }
+
+            showResult(resultArray)
+            endAnim()
+
+            // Scorri al risultato
+            resultSection.scrollIntoView({ behavior: 'smooth' })
+        });
+
+        // Permetti l'invio con Ctrl+Enter
+        promptInput.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'Enter') {
+                processEveryLoc.click()
+            }
+        })
+    </script>
+</body>
+</html>
