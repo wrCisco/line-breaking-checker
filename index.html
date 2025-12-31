@@ -154,6 +154,7 @@
             color: #374151;
             line-height: 1.6;
             transition: all 0.2s ease;
+            white-space: pre-wrap;
         }
 
         .result-output:focus {
@@ -255,7 +256,7 @@
         </div>
     </div>
     <script type="module">
-        import { BreakType, makeLBC } from './dist/src/linebreakingchecker.js'
+        import { BreakType, makeLBC } from './src/linebreakingchecker.mjs'
 
         const promptInput = document.getElementById('promptInput')
         const processEveryLoc = document.getElementById('process-every-location')
