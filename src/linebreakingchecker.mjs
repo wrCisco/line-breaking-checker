@@ -262,6 +262,7 @@ class LineBreakingChecker {
     }
 
     [Symbol.iterator]() {
+        let prev = 0
         let current = -1
         let lineBreak = BreakType.MANDATORY|BreakType.ALLOWED
         return {
@@ -274,7 +275,9 @@ class LineBreakingChecker {
                     }
                     result = this.isPosLineBreaking(current)
                 }
-                return { done: false, value: { index: current, breakType: result }}
+                const part = this.text.slice(prev, current)
+                prev = current
+                return { done: false, value: { index: current, breakType: result, text: part }}
             }
         }
     }
